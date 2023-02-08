@@ -1,6 +1,15 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
+
+import 'Global.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+}
 
 class VideoApp extends StatefulWidget {
   const VideoApp({Key? key}) : super(key: key);
@@ -11,21 +20,33 @@ class VideoApp extends StatefulWidget {
 
 class _VideoAppState extends State<VideoApp> {
   late VideoPlayerController videoPlayerController;
-  late ChewieController chewieController;
+  late ChewieController cController;
 
   loadVideo() async {
-    videoPlayerController = VideoPlayerController.network(
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4');
+    videoPlayerController = VideoPlayerController.asset(Global.uri);
     await videoPlayerController.initialize();
     setState(() {});
-    chewieController = ChewieController(
-        videoPlayerController: videoPlayerController, autoPlay: true);
+    cController = ChewieController(
+        videoPlayerController: videoPlayerController,
+        autoPlay: true,
+        fullScreenByDefault: true,
+        looping: true,
+        allowFullScreen: true);
   }
 
   @override
   void initState() {
     loadVideo();
     super.initState();
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    videoPlayerController.dispose();
+    cController.dispose();
   }
 
   @override
@@ -35,7 +56,7 @@ class _VideoAppState extends State<VideoApp> {
           child: AspectRatio(
         aspectRatio: videoPlayerController.value.aspectRatio,
         child: Chewie(
-          controller: chewieController,
+          controller: cController,
         ),
       )),
     );
